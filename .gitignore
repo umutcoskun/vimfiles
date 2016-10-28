@@ -1,0 +1,10 @@
+# swap files
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+
+# sessions
+Session.vim
+
+.netrwhist
+*~
+plugged/*
