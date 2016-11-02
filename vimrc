@@ -3,17 +3,29 @@ call plug#begin('~/.vim/plugged')
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 
+" Simple auto complete plugin.
+Plug 'maxboisvert/vim-simple-complete'
+
+" % matching for HTML
+Plug 'tmhedberg/matchit'
+
+" Auto close HTML tags.
+Plug 'alvan/vim-closetag'
+
+Plug 'mattn/emmet-vim'
+
+" Auto close brackets.
+Plug 'jiangmiao/auto-pairs'
+
+Plug 'majutsushi/tagbar'
 Plug 'mbbill/undotree', {'on': 'UndotreeToggle'}
-
-Plug 'mattn/emmet-vim', {'for': 'html'}
-
 Plug 'henrik/vim-indexed-search'
 
 " PEP8 and linting plugin for Python.
 Plug 'scrooloose/syntastic', {'for': 'python'}
 
 " Fuzzy file finder.
-Plug 'ctrlpvim/ctrlp.vim', {'on': 'CtrlPMixed'}
+Plug 'ctrlpvim/ctrlp.vim'
 
 " Async command runner.
 Plug 'skywind3000/asyncrun.vim', {'on': 'AsyncRun'}
@@ -27,23 +39,34 @@ Plug 'tpope/vim-fugitive'
 " Show git added/changed/deleted marks on the edited line.
 Plug 'airblade/vim-gitgutter'
 
+" Color schemes.
 Plug 'kristijanhusak/vim-hybrid-material'
-
-" Use TAB for auto completions.
-Plug 'ervandew/supertab'
-
-" Auto completion library for Python.
-Plug 'davidhalter/jedi-vim', {'for': 'python'}
-
-" Enhanced syntax and highlighting for Python.
-Plug 'mitsuhiko/vim-python-combined', {'for': 'python'}
 
 " Productivity functions for Django.
 Plug 'umutcoskun/vim-mule', {'for': 'python'}
 
+" Better Jinja highlighting and indendation.
 Plug 'lepture/vim-jinja'
 
 call plug#end()
+
+" --------------------
+" FUNCTIONS
+" --------------------
+
+function! g:OpenOrSplit(file)
+    " The buffer is already open?
+    if bufwinnr(a:file) > 0
+        return
+    endif
+
+    " Current buffer is empty?
+    if line('$') == 1 && getline(1) == ''
+        execute ':e' . a:file
+    else
+        execute ':vsp' .  a:file
+    endif
+endfunction
 
 
 " --------------------
@@ -56,6 +79,8 @@ filetype plugin on              " And the plugins
 set clipboard=unnamedplus       " Use system clipboard
 set encoding=utf8               " Set utf8 as standard encoding
 set shortmess=I                 " Remove start screen message.
+set report=0                    " Show text actions in the messages.
+set backspace=indent,eol,start  " Backspace stuck problem.
 
 " --------------------
 " COLORS AND FONTS
@@ -80,7 +105,7 @@ else
 endif
 
 set ffs=unix,dos,mac            " Set Unix as the standard file type
-" set acd                         " Change the current working directory whenever open a file.
+set acd                         " Change the current working directory whenever open a file.
 
 " --------------------
 " SPACES, TABS AND LINES
@@ -94,81 +119,80 @@ set ai                          " Auto indent
 set si                          " Smart indent
 set wrap                        " Wrap lines
 
-" Set tabs to 2 spaces in html, css
-autocmd Filetype jinja,html,css setlocal ts=2 sw=2 expandtab
-
 " Display indentation guides
 set list listchars=tab:❘-,trail:·,extends:»,precedes:«,nbsp:×
 
 " --------------------
 " UI CONFIG
 " --------------------
-set title                   " Change terminal title to filename.
-set number                  " Show line numbers
-set ruler                   " Always show current position
-set cmdheight=2             " Set height of the command bar to 2 lines
-set showcmd                 " Show command in bottom bar
-set cursorline              " Highlight current line
-set wildmenu                " Visual autocomplete for command menu and hide compiled files
-set wildmode=list:longest   " Bash-like command completion
-set wildignore=*.o,*~/*.pyc " Ignore compiled files
+set title                       " Change terminal title to filename.
+set number                      " Show line numbers
+set ruler                       " Always show current position
+set cmdheight=2                 " Set height of the command bar to 2 lines
+set showcmd                     " Show command in bottom bar
+set cursorline                  " Highlight current line
+set wildmenu                    " Visual autocomplete for command menu and hide compiled files
+set wildmode=list:longest       " Bash-like command completion
+set wildignore=*.o,*~/*.pyc     " Ignore compiled files
 set wildignore+=*/env/*,*/__pycache__/*,*/.git/*,*/.hg/*,*/.svn/*,*/.idea/*
-set lazyredraw              " Redraw only when we need to
-set showmatch               " Highlight matching of brackets
-set mat=1                   " How many tenths of a second to blink when matching
-set autoindent              " Keep the same indent as the line currently on
-set laststatus=2            " Always display the status line
-set guitablabel=%t          " Show only filename in tab line
-set confirm                 " Raise a dialogue asking if you wish to save changed files
-set visualbell              " Use visual bell instead of beeping
-set noerrorbells            " No annoying sound on errors
-set t_vb=                   " Reset terminal code for the visual bell
-set mouse=a                 " Enable use of the mouse for all modes
-set splitbelow              " Open new tabs to bottom
-set splitright              " Open new tabs to right
+set lazyredraw                  " Redraw only when we need to
+set showmatch                   " Highlight matching of brackets
+set mat=1                       " How many tenths of a second to blink when matching
+set autoindent                  " Keep the same indent as the line currently on
+set laststatus=2                " Always display the status line
+set guitablabel=%t              " Show only filename in tab line
+set confirm                     " Raise a dialogue asking if you wish to save changed files
+set visualbell                  " Use visual bell instead of beeping
+set noerrorbells                " No annoying sound on errors
+set t_vb=                       " Reset terminal code for the visual bell
+set mouse=a                     " Enable use of the mouse for all modes
+set splitbelow                  " Open new tabs to bottom
+set splitright                  " Open new tabs to right
 
 " --------------------
 " SEARCHING
 " --------------------
-set incsearch               " Search as characters as entered
-set hlsearch                " Highlight matches
-set ignorecase              " Use case insentive search
-set smartcase               " Except when using capital letters
-set magic                   " Turn on regex-searching
+set incsearch                   " Search as characters as entered
+set hlsearch                    " Highlight matches
+set ignorecase                  " Use case insentive search
+set smartcase                   " Except when using capital letters
+set magic                       " Turn on regex-searching
 
 " --------------------
 " FOLDING
 " --------------------
-set foldenable              " Enable folding
-set foldlevelstart=10       " Open most folds by default
-set foldnestmax=5           " 5 nested fold max
-set foldmethod=indent       " Fold based on indent level
+set foldenable                  " Enable folding
+set foldlevelstart=10           " Open most folds by default
+set foldnestmax=5               " 5 nested fold max
+set foldmethod=indent           " Fold based on indent level
 
 
 " --------------------
-" AUTO COMMANDS
+" COMMANDS
 " --------------------
 
-" Try to load skeleton templates.
-" autocmd BufNewFile *.* silent! execute '0r ~/vim/templates/skeleton.'.expand('<afile>:e')
-
-" Remove trailing whitespaces when saved.
-autocmd BufWritePre *.py :%s/\s\+$//e
-
-" File type spesific run commands
-autocmd FileType python command! Run :!python3 %<CR>
+" Fix typo. :)
+command! Wqa :wqa<CR>
 
 " --------------------
 " SHORTCUTS
 " --------------------
-let mapleader=","           " Set comma as leader key
-set pastetoggle=<F7>        " Shortcut for toggle paste mode
 
-nnoremap <leader>q :q!<CR>
-nnoremap <leader>h :%s/
+let mapleader=","               " Set comma as leader key
+
+nmap <F5> :NERDTreeToggle<CR>
+set pastetoggle=<F7>            " Shortcut for toggle paste mode
+nmap <F10> :TagbarToggle<CR>
+
+" Clear current buffer.
+nnoremap <silent> <leader>q :bd!<CR>
+" Close all buffers without save.
+nnoremap <silent> <leader>x :qa!<CR>
+" Indent the entire file then go last edited line.
+nnoremap <silent> <leader>fef ggVG=<CR>
 
 " Open sourced vimrc in split.
-nnoremap <leader>v  :vsp $MYVIMRC<CR>
+nnoremap <silent> <leader>v  :call g:OpenOrSplit($MYVIMRC)<CR>
 
 " Fold and unfold with space.
 nnoremap <space> za
@@ -199,8 +223,10 @@ vnoremap < <gv
 " Enable w!! for saving file with root privileges
 cnoremap w!! w !sudo tee % >/dev/null
 
-" Ignore capitalize.
-command! Wqa :wqa<CR>
+" Go to beginning of the current line.
+nnoremap 3 ^
+" Go to end of the current line.
+nnoremap 4 $
 
 " --------------------
 " BACKUPS
@@ -218,25 +244,15 @@ endif
 " --------------------
 
 " NERDTree Settings
-nnoremap <F5> :NERDTreeToggle<CR>
 let NERDTreeIgnore=['\.o$','\~$','\.pyc$']
 let NERDTreeMinimalUI=1
 
 " Airline Settings
 let g:airline_theme = 'hybrid'
 
-" Emmet
-let g:user_emmet_install_global = 0
-let g:user_emmet_expandabbr_key='<S-Tab>'
-autocmd FileType jinja,html imap <s-tab> <plug>(emmet-expand-abbr)
-autocmd FileType jinja,html EmmetInstall
-
 " syntastic
-let g:syntastic_python_checkers=['pep8', 'pylint', 'python']
+let g:syntastic_python_checkers=['flake8', 'python']
 let g:syntastic_python_python_exec = '/usr/bin/python3'
-
-" jedi-vim
-let g:jedi#popup_on_dot = 1
 
 " asyncrun.vim
 augroup vimrc
@@ -254,3 +270,6 @@ nnoremap <leader>u :UndotreeToggle<CR>
 let g:undotree_WindowLayout = 3
 let g:undotree_DiffpanelHeight = 20
 let g:undotree_SetFocusWhenToggle = 1
+
+" vim-simple-complete
+let g:vsc_tab_complete = 0
