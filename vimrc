@@ -1,3 +1,5 @@
+set nocompatible                        " Use Vim settings, rather than Vi settings
+
 call plug#begin('~/.vim/plugged')
 
 Plug 'scrooloose/nerdtree'
@@ -7,12 +9,15 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'maxboisvert/vim-simple-complete'
 
 " % matching for HTML
-Plug 'tmhedberg/matchit'
+Plug 'tmhedberg/matchit', {'for': 'html'}
 
 " Auto close HTML tags.
-Plug 'alvan/vim-closetag'
+Plug 'alvan/vim-closetag', {'for': 'html'}
 
-Plug 'mattn/emmet-vim'
+" Colorize HEX codes
+Plug 'ap/vim-css-color', {'for': 'css'}
+
+Plug 'mattn/emmet-vim', {'for': 'html'}
 
 " Auto close brackets.
 Plug 'jiangmiao/auto-pairs'
@@ -21,14 +26,8 @@ Plug 'majutsushi/tagbar'
 Plug 'mbbill/undotree', {'on': 'UndotreeToggle'}
 Plug 'henrik/vim-indexed-search'
 
-" PEP8 and linting plugin for Python.
+" Syntax cheching plugin for Python.
 Plug 'scrooloose/syntastic', {'for': 'python'}
-
-" Fuzzy file finder.
-Plug 'ctrlpvim/ctrlp.vim'
-
-" Async command runner.
-Plug 'skywind3000/asyncrun.vim', {'on': 'AsyncRun'}
 
 Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-airline/vim-airline'
@@ -45,8 +44,11 @@ Plug 'kristijanhusak/vim-hybrid-material'
 " Productivity functions for Django.
 Plug 'umutcoskun/vim-mule', {'for': 'python'}
 
-" Better Jinja highlighting and indendation.
+" Syntax plugins.
+Plug 'mitsuhiko/vim-python-combined'
+Plug 'JulesWang/css.vim'
 Plug 'lepture/vim-jinja'
+Plug 'pangloss/vim-javascript'
 
 call plug#end()
 
@@ -72,15 +74,14 @@ endfunction
 " --------------------
 " GENERAL
 " --------------------
-set nocompatible                " Use Vim settings, rather than Vi settings
-set autoread                    " Read when a file is changed from the outside
-filetype indent on              " Load filetype-spesific indent files
-filetype plugin on              " And the plugins
-set clipboard=unnamedplus       " Use system clipboard
-set encoding=utf8               " Set utf8 as standard encoding
-set shortmess=I                 " Remove start screen message.
-set report=0                    " Show text actions in the messages.
-set backspace=indent,eol,start  " Backspace stuck problem.
+set autoread                            " Read when a file is changed from the outside
+filetype indent on                      " Load filetype-spesific indent files
+filetype plugin on                      " And the plugins
+set clipboard=unnamedplus               " Use system clipboard
+set encoding=utf8                       " Set utf8 as standard encoding
+set shortmess=I                         " Remove start screen message.
+set report=0                            " Show text actions in the messages.
+set backspace=indent,eol,start          " Backspace stuck problem.
 
 " --------------------
 " COLORS AND FONTS
@@ -175,21 +176,32 @@ set foldmethod=indent           " Fold based on indent level
 command! Wqa :wqa<CR>
 
 " --------------------
-" SHORTCUTS
+" MAPPINGS
 " --------------------
 
 let mapleader=","               " Set comma as leader key
 
-nmap <F5> :NERDTreeToggle<CR>
-set pastetoggle=<F7>            " Shortcut for toggle paste mode
-nmap <F10> :TagbarToggle<CR>
+" Jump over TAGs
+nmap <S-Up> [[
+nmap <S-Down> ]]
+
+" Hard wrap paragraph of text.
+nnoremap <leader>w gqip
+
+" Sort CSS properties.
+nnoremap <leader>S ?{<CR>jV/^\s*\}?$<CR>k:sort<CR>:noh<CR>
+
+" Re-selected just pasted text.
+nnoremap <leader>v V`]
 
 " Clear current buffer.
 nnoremap <silent> <leader>q :bd!<CR>
+
 " Close all buffers without save.
 nnoremap <silent> <leader>x :qa!<CR>
+
 " Indent the entire file then go last edited line.
-nnoremap <silent> <leader>fef ggVG=<CR>
+nnoremap <silent> <leader>fef ggVG='.<CR>
 
 " Open sourced vimrc in split.
 nnoremap <silent> <leader>v  :call g:OpenOrSplit($MYVIMRC)<CR>
@@ -223,10 +235,9 @@ vnoremap < <gv
 " Enable w!! for saving file with root privileges
 cnoremap w!! w !sudo tee % >/dev/null
 
-" Go to beginning of the current line.
-nnoremap 3 ^
-" Go to end of the current line.
-nnoremap 4 $
+nmap <F5> :NERDTreeToggle<CR>
+set pastetoggle=<F7>            " Shortcut for toggle paste mode
+nmap <F10> :TagbarToggle<CR>
 
 " --------------------
 " BACKUPS
@@ -247,23 +258,12 @@ endif
 let NERDTreeIgnore=['\.o$','\~$','\.pyc$']
 let NERDTreeMinimalUI=1
 
-" Airline Settings
-let g:airline_theme = 'hybrid'
-
 " syntastic
-let g:syntastic_python_checkers=['flake8', 'python']
+let g:syntastic_python_checkers=['flake8']
 let g:syntastic_python_python_exec = '/usr/bin/python3'
 
-" asyncrun.vim
-augroup vimrc
-    autocmd QuickFixCmdPost * botright copen 8
-augroup END
-
-" CtrlP
-let g:ctrlp_map = '<F3>'
-let g:ctrlp_cmd = 'CtrlPMixed'
-let g:ctrlp_working_path_mode = 'ra'
-let g:ctrlp_root_markers = ['.idea', '.git']
+" Airline Settings
+let g:airline_theme = 'hybrid'
 
 " UndoTree
 nnoremap <leader>u :UndotreeToggle<CR>
