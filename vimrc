@@ -2,37 +2,43 @@ set nocompatible                        " Use Vim settings, rather than Vi setti
 
 call plug#begin('~/.vim/plugged')
 
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+Plug 'Xuyuanp/nerdtree-git-plugin', { 'on':  'NERDTreeToggle' }
+Plug 'kien/ctrlp.vim'
 
-" Simple auto complete plugin.
-Plug 'maxboisvert/vim-simple-complete'
+Plug 'scrooloose/nerdcommenter'
 
-" % matching for HTML
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'Shougo/neosnippet', {'for': 'python'}
+Plug 'Shougo/neosnippet-snippets', {'for': 'python'}
+
+" % matching for HTML.
 Plug 'tmhedberg/matchit', {'for': 'html'}
+" Highlight matching HTML tag.
+Plug 'gregsexton/MatchTag', {'for': 'jinja.html,html'}
 
-" Auto close HTML tags.
-Plug 'alvan/vim-closetag', {'for': 'html'}
+Plug 'editorconfig/editorconfig-vim'
 
 " Colorize HEX codes
-Plug 'ap/vim-css-color', {'for': 'css'}
+Plug 'ap/vim-css-color', {'for': 'scss'}
 
-Plug 'mattn/emmet-vim', {'for': 'html'}
+Plug 'mattn/emmet-vim', {'for': 'jinja.html,html,xhtml'}
+
+" Reopen files at last position.
+Plug 'farmergreg/vim-lastplace'
 
 " Auto close brackets.
 Plug 'jiangmiao/auto-pairs'
 
-Plug 'majutsushi/tagbar'
-Plug 'mbbill/undotree', {'on': 'UndotreeToggle'}
-Plug 'henrik/vim-indexed-search'
+Plug 'google/vim-searchindex'
 
-" Syntax cheching plugin for Python.
-Plug 'scrooloose/syntastic', {'for': 'python'}
+" Syntax checking.
+Plug 'scrooloose/syntastic'
 
 Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-airline/vim-airline'
 
-" Git wrapper for vim.
+" Git wrapper.
 Plug 'tpope/vim-fugitive'
 
 " Show git added/changed/deleted marks on the edited line.
@@ -44,13 +50,15 @@ Plug 'kristijanhusak/vim-hybrid-material'
 " Productivity functions for Django.
 Plug 'umutcoskun/vim-mule', {'for': 'python'}
 
-" Syntax plugins.
+" Syntax highlighting plugins.
 Plug 'mitsuhiko/vim-python-combined'
 Plug 'JulesWang/css.vim'
 Plug 'lepture/vim-jinja'
 Plug 'pangloss/vim-javascript'
+Plug 'StanAngeloff/php.vim'
 
 call plug#end()
+
 
 " --------------------
 " FUNCTIONS
@@ -71,10 +79,28 @@ function! g:OpenOrSplit(file)
 endfunction
 
 
+function! s:TabTab()
+    if neosnippet#expandable_or_jumpable()
+        echo 'NEO'
+        return '\<Plug>(neosnippet_expand_or_jump)'
+    elseif emmet#isExpandable()
+        echo 'EMMET'
+        return '\<Plug>(emmet-expand-abbr)'
+    elseif pumvisible()
+        echo 'PUM'
+        return '\<C-n>'
+    else
+        echo 'TAB'
+        return '\<Tab>'
+    endif
+endfunction
+
+
 " --------------------
 " GENERAL
 " --------------------
 set autoread                            " Read when a file is changed from the outside
+au CursorHold * checktime
 filetype indent on                      " Load filetype-spesific indent files
 filetype plugin on                      " And the plugins
 set clipboard=unnamedplus               " Use system clipboard
@@ -86,10 +112,19 @@ set backspace=indent,eol,start          " Backspace stuck problem.
 " --------------------
 " COLORS AND FONTS
 " --------------------
+
+if has('patch-7.4.1778')
+  set guicolors
+endif
+
+if has('nvim')
+  let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+endif
+
 syntax on                       " Enable syntax highlighting
 set t_Co=256                    " Enable 256-bit coloring
 set background=dark
-colorscheme hybrid_reverse  " Theme
+colorscheme hybrid_reverse
 
 if has("gui_running")
     " GUI Options
@@ -172,8 +207,9 @@ set foldmethod=indent           " Fold based on indent level
 " COMMANDS
 " --------------------
 
-" Fix typo. :)
-command! Wqa :wqa<CR>
+autocmd Filetype scss setlocal tabstop=2 shiftwidth=2
+autocmd Filetype javascript setlocal tabstop=2 shiftwidth=2
+autocmd Filetype php setlocal tabstop=4 shiftwidth=4
 
 " --------------------
 " MAPPINGS
@@ -237,7 +273,6 @@ cnoremap w!! w !sudo tee % >/dev/null
 
 nmap <F5> :NERDTreeToggle<CR>
 set pastetoggle=<F7>            " Shortcut for toggle paste mode
-nmap <F10> :TagbarToggle<CR>
 
 " --------------------
 " BACKUPS
@@ -259,17 +294,45 @@ let NERDTreeIgnore=['\.o$','\~$','\.pyc$']
 let NERDTreeMinimalUI=1
 
 " syntastic
-let g:syntastic_python_checkers=['flake8']
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 0
+let g:syntastic_check_on_wq = 0
+
+" Requires tidy
+let g:syntastic_html_checkers = ['w3']
+let g:syntastic_css_checkers = ['csslint']
+" Requires jshint
+let g:syntastic_javascript_checkers = ['jshint']
+" Requires flake8
+let g:syntastic_python_checkers = ['flake8']
 let g:syntastic_python_python_exec = '/usr/bin/python3'
+
+let g:syntastic_php_checkers = ['php', 'phpcs', 'phpmd']
 
 " Airline Settings
 let g:airline_theme = 'hybrid'
 
-" UndoTree
-nnoremap <leader>u :UndotreeToggle<CR>
-let g:undotree_WindowLayout = 3
-let g:undotree_DiffpanelHeight = 20
-let g:undotree_SetFocusWhenToggle = 1
+" Use Deoplete
+let g:deoplete#enable_at_startup = 1
 
-" vim-simple-complete
-let g:vsc_tab_complete = 0
+" CtrlP
+let g:ctrlp_custom_ignore = '\v[\/](node_modules|bower_components|target|dist)|(\.(swp|ico|git|svn))$'
+
+" Neosnippet
+autocmd filetype python imap <TAB>     <Plug>(neosnippet_expand_or_jump)
+autocmd filetype python smap <TAB>     <Plug>(neosnippet_expand_or_jump)
+autocmd filetype python xmap <TAB>     <Plug>(neosnippet_expand_target)
+if has('conceal')
+  set conceallevel=2 concealcursor=niv
+endif
+" /Neosnippet
+
+" Emmet
+let g:user_emmet_expandabbr_key='<tab>'
+autocmd filetype html,xhtml,jinja.html imap <expr> <tab> emmet#expandAbbrIntelligent("\<tab>")
+
